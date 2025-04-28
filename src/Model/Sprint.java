@@ -6,6 +6,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+//een sprint voorstellen
+//dee klasse bewaart:
+//1 naam van de sprint
+//2 Of de sprint nog actief is
+//3 Startdatum van de sprint
+//4 automatisch berekenen hoeveel dagen er nog over zijn
+//5 automatisch sluiten van een sprint als hij voorbij is
 
 public class Sprint {
     private int sprintID;
@@ -52,7 +59,7 @@ public class Sprint {
 
     public static void sprintSluiten(int sprintID) throws SQLException {
         String sql = "UPDATE `scrumassistant`.`sprint` SET `Status` = 0 WHERE `SprintID` = " + sprintID;
-        try (Connection conn = Account.connect()) {
+        try (Connection conn = DatabaseConnector.connect()) {
             Statement stmt = conn.createStatement();
             stmt.executeUpdate(sql);
         }

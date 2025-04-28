@@ -1,5 +1,12 @@
 package Model;
 
+// een bericht voorstellen
+//gegevens van een bericht vasthouden en teruggeven.
+//bewaart alle informatie over een geplaatst bericht in het systeem
+//doel: alle kenmerken van een bericht opslaan
+//toegang geven tot elk kenmerk via getter
+//koppeling tussen bericht en epic taak etc
+
 public class Message {
     private int berichtID;
     private String tekst;
@@ -10,6 +17,7 @@ public class Message {
     private int userStoryID;
     private int taakID;
 
+    //maakt een nieuwe massage object aan
     public Message(int berichtID, String tekst, String naamAfzender, int gebruikerID, int threadID, int epicID, int userStoryID, int taakID) {
         this.berichtID = berichtID;
         this.tekst = tekst;
