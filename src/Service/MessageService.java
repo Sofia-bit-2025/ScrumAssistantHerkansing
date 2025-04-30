@@ -4,18 +4,20 @@
 //Opslaan van berichten en koppelen aan sprints of andere onderdelen (Epic, User Story, Taak).
 //Ophalen en tonen van berichten, inclusief markering van juiste antwoorden.
 //Automatisch notificaties aanmaken bij belangrijke updates (zoals "afgerond" of "bijgewerkt").
+
 package Service;
+
 import Model.DatabaseConnector;
 import Model.Gebruiker;
 import Model.Message;
-import Service.NotificatieService;
 import Model.Notificatie;
 import Service.NotificatieService;
+import Model.Notificatie.TypeUpdate;
+
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import Model.Notificatie.TypeUpdate;
 
 public class MessageService {
 
@@ -47,7 +49,7 @@ public class MessageService {
         }
         rs.beforeFirst();
         while (rs.next()) {
-            int berichtID = rs.getInt("berichtID");
+            int berichtID = rs.getInt("BerichtID");
             boolean isJuisteAntwoord = berichtID == juisteAntwoordID;
             if (isJuisteAntwoord) {
                 System.out.println("\n********** [JUISTE ANTWOORD] **********");
@@ -134,5 +136,51 @@ public class MessageService {
         }
     }
 
+    public List<Message> getMessagesByUserStoryIDs(List<Integer> userStoryIDs) {
+        List<Message> berichten = new ArrayList<>();
+        if (userStoryIDs == null || userStoryIDs.isEmpty()) {
+            System.out.println("Geen user story-ID's opgegeven.");
+            return berichten;
+        }
 
+        StringBuilder placeholders = new StringBuilder();
+        for (int i = 0; i < userStoryIDs.size(); i++) {
+            placeholders.append("?");
+            if (i < userStoryIDs.size() - 1) {
+                placeholders.append(",");
+            }
+        }
+
+        String query = "SELECT * FROM Bericht WHERE UserStory_ID IN (" + placeholders + ") ORDER BY Datum DESC";
+
+        try (Connection conn = DatabaseConnector.connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            for (int i = 0; i < userStoryIDs.size(); i++) {
+                stmt.setInt(i + 1, userStoryIDs.get(i));
+            }
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Message msg = new Message(
+                        rs.getInt("BerichtID"),
+                        rs.getString("Tekst"),
+                        "", // naamAfzender niet opgehaald in deze query
+                        rs.getInt("AfzenderID"),
+                        rs.getInt("Thread_ID"),
+                        rs.getInt("Epic_ID"),
+                        rs.getInt("UserStory_ID"),
+                        rs.getInt("Taak_ID"),
+                        rs.getDate("Datum").toLocalDate(),
+                        rs.getBoolean("isBeslissing")
+                );
+                berichten.add(msg);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Fout bij ophalen van berichten: " + e.getMessage());
+        }
+
+        return berichten;
+    }
 }
