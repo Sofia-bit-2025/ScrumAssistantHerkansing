@@ -91,7 +91,7 @@ public class FilterGesprekTest {
             if (rs.next()) {
                 System.out.println("User Story: " + rs.getString("UserStoryTitel"));
                 System.out.println("Beschrijving: " + rs.getString("Beschrijving"));
-                System.out.println("Behoort bij Epic: " + rs.getString("EpicTitel"));
+                System.out.println("hoort bij Epic: " + rs.getString("EpicTitel"));
             } else {
                 System.out.println("User Story niet gevonden.");
             }

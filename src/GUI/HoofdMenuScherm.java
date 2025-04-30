@@ -33,7 +33,8 @@ public class HoofdMenuScherm extends JFrame {
                 "Attentie",
                 "TeamTalk",
                 "Start een debat",
-                "Epic - User Story - Taak"
+                "Epic - User Story - Taak",
+                "Filter berichten per User Story"
         };
 
         for (String label : knoppen) {
@@ -59,6 +60,9 @@ public class HoofdMenuScherm extends JFrame {
                         break;
                     case "Epic - User Story - Taak":
                         new StructuurScherm();
+                        break;
+                    case "Filter berichten per User Story":
+                        new FilterBerichtGUI(gebruiker); // nieuw scherm
                         break;
                     default:
                         JOptionPane.showMessageDialog(this, "Functie: " + label + " is (nog) niet geïmplementeerd.");
