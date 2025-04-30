@@ -60,6 +60,57 @@ public class ThreadService {
         return threads;
     }
 
+    public List<Thread> getThreadsByUserStories(List<Integer> userStoryIDs) throws SQLException {
+        List<Thread> threads = new ArrayList<>();
+        if (userStoryIDs == null || userStoryIDs.isEmpty()) return threads;
+
+        StringBuilder placeholders = new StringBuilder();
+        for (int i = 0; i < userStoryIDs.size(); i++) {
+            placeholders.append("?");
+            if (i < userStoryIDs.size() - 1) placeholders.append(",");
+        }
+
+        String query = "SELECT * FROM Thread WHERE UserStory_ID IN (" + placeholders + ")";
+        try (Connection conn = DatabaseConnector.connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            for (int i = 0; i < userStoryIDs.size(); i++) {
+                stmt.setInt(i + 1, userStoryIDs.get(i));
+            }
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                threads.add(mapThread(rs));
+            }
+        }
+        return threads;
+    }
+
+
+    public void displayThreadsByUserStories(List<Integer> userStoryIDs) {
+        if (userStoryIDs == null || userStoryIDs.isEmpty()) {
+            System.out.println(" Geen user story-ID's opgegeven.");
+            return;
+        }
+
+        try {
+            List<Thread> threads = getThreadsByUserStories(userStoryIDs);
+
+            if (threads.isEmpty()) {
+                System.out.println("Geen gesprekken gevonden voor de geselecteerde user stories: " + userStoryIDs);
+            } else {
+                System.out.println(" Gesprekken gekoppeld aan user stories: " + userStoryIDs);
+                for (Thread thread : threads) {
+                    System.out.println(thread);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Fout bij ophalen van threads: " + e.getMessage());
+        }
+    }
+
+
     public void displayThreadsByUserStory(int userStoryID) {
         try {
             List<Thread> threads = getThreadsByUserStory(userStoryID);
