@@ -1,28 +1,52 @@
 package Model;
-// deze klasse is bedoeld om een gebruiker voor te stellen
-//gegevens van een gebruiker bij elkaar houden
+
+import java.time.LocalDateTime;
+
+
 
 public class Gebruiker {
     private int gebruikerID;
-    private String naam;
+    private String voornaam;
+    private String achternaam;
+    private String email;
     private String rol;
+    private LocalDateTime datumRegistratie;
 
-    // dit object bevat de gegevens van een gebruiker
-    public Gebruiker(int gebruikerID, String naam, String rol) {
+    public Gebruiker(int gebruikerID, String voornaam, String achternaam, String email, String rol, LocalDateTime datumRegistratie) {
         this.gebruikerID = gebruikerID;
-        this.naam = naam;
+        this.voornaam = voornaam;
+        this.achternaam = achternaam;
+        this.email = email;
         this.rol = rol;
+        this.datumRegistratie = datumRegistratie;
     }
 
     public int getGebruikerID() {
         return gebruikerID;
     }
 
-    public String getNaam() {
-        return naam;
+    public String getVoornaam() {
+        return voornaam;
+    }
+
+    public String getAchternaam() {
+        return achternaam;
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     public String getRol() {
         return rol;
+    }
+
+    public LocalDateTime getDatumRegistratie() {
+        return datumRegistratie;
+    }
+
+    @Override
+    public String toString() {
+        return voornaam + " " + achternaam + " (" + rol + "), geregistreerd op: " + datumRegistratie;
     }
 }

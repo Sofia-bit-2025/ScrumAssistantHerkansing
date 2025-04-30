@@ -1,30 +1,23 @@
+//stelt een scrum sprint voor in het systeem
+// en beheert de basisgegevens en tijdslogica van die sprint.
+//Houdt informatie bij over de naam, status, startdatum en looptijd van een sprint.
+//Kan berekenen hoeveel dagen er nog over zijn tot het einde van de sprint.
+//Bepaalt of een sprint verlopen is
 package Model;
-
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-//een sprint voorstellen
-//dee klasse bewaart:
-//1 naam van de sprint
-//2 Of de sprint nog actief is
-//3 Startdatum van de sprint
-//4 automatisch berekenen hoeveel dagen er nog over zijn
-//5 automatisch sluiten van een sprint als hij voorbij is
 
 public class Sprint {
     private int sprintID;
     private String naam;
-    private boolean status;
-    private Date datum;
+    private boolean actief;
+    private LocalDate startDatum;
 
-    public Sprint(int sprintID, String naam, boolean status, Date datum) {
+    public Sprint(int sprintID, String naam, boolean actief, LocalDate startDatum) {
         this.sprintID = sprintID;
         this.naam = naam;
-        this.status = status;
-        this.datum = datum;
+        this.actief = actief;
+        this.startDatum = startDatum;
     }
 
     public int getSprintID() {
@@ -35,37 +28,29 @@ public class Sprint {
         return naam;
     }
 
-    public boolean isActive() {
-        return status;
+    public boolean isActief() {
+        return actief;
     }
 
-    public Date getDatum() {
-        return datum;
+    public LocalDate getStartDatum() {
+        return startDatum;
     }
 
     public long getDaysLeft() {
-        LocalDate startDate = datum.toLocalDate();
-        LocalDate endDate = startDate.plusWeeks(2);  // Model.Sprint lasts 2 weeks
-        if (ChronoUnit.DAYS.between(LocalDate.now(), endDate) <= 0) {
-            this.status = false;
-            try {
-                sprintSluiten(this.sprintID);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return ChronoUnit.DAYS.between(LocalDate.now(), endDate);
+        LocalDate eindDatum = startDatum.plusWeeks(2);
+        long dagenOver = ChronoUnit.DAYS.between(LocalDate.now(), eindDatum);
+        return Math.max(dagenOver, 0);
     }
 
-    public static void sprintSluiten(int sprintID) throws SQLException {
-        String sql = "UPDATE `scrumassistant`.`sprint` SET `Status` = 0 WHERE `SprintID` = " + sprintID;
-        try (Connection conn = DatabaseConnector.connect()) {
-            Statement stmt = conn.createStatement();
-            stmt.executeUpdate(sql);
-        }
+    public boolean isVerlopen() {
+        return getDaysLeft() == 0;
     }
+
     @Override
     public String toString() {
-        return "Model.Sprint #" + sprintID + " | Naam: " + naam + " | Datum: " + datum + " | Actief: " + (status ? "Ja" : "Nee") + " | Tijd over: " + getDaysLeft() + " dagen";
+        return "Sprint #" + sprintID + " | " + naam +
+                " | Start: " + startDatum +
+                " | Actief: " + (actief ? "Ja" : "Nee") +
+                " | Dagen over: " + getDaysLeft();
     }
 }

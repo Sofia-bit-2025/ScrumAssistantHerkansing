@@ -1,23 +1,31 @@
+//De klasse Samenvatting vertegenwoordigt een dagelijkse verzameling van berichten
+// en threads die gekoppeld zijn aan één specifieke User Story.
+//Houdt gegevens bij over de User Story, alle verzamelde berichten,
+// threads en de datum van de samenvatting.
+//Biedt gestructureerde toegang tot deze informatie
+// om bijvoorbeeld rapportages of dagoverzichten te maken.
 package Model;
-
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Date;
+//een dagoverzicht  van communicatie die hoort bij een specifieke User Story
+//wordt gebruikt voor het structureren en opslaan van informatie
+//Een gestructureerde representatie maken van:
+//welke berichten en threads er op een dag zijn verzameld,
+//bij welke User Story dit hoort,
+//en op welke datum dit gebeurde.
 
-//een compleet dagelijks overzicht maken van alle communicatie die hoort bij één specifieke User Story.
-//verzamelt alle berichten en alle threads bewaart wanneer die communicatie is gebeurd
-//1-Groeperen van informatie per User Story
-//2-Structuur bieden voor een dagsamenvatting
-//3-Ondersteuning voor rapportages
 
 public class Samenvatting {
-    private int userStoryID;         // Op welke User Story hoort deze samenvatting
-    private String userStoryTitel;   // Titel van de User Story
-    private List<String> berichten;  // Alle teksten uit berichten (Message)
-    private List<String> threads;    // Alle titels uit Threads
-    private Date datum;              // Datum van samenvatting (bijvoorbeeld vandaag)
+    private int samenvattingID;
+    private int userStoryID;
+    private String userStoryTitel;
+    private List<String> berichten;
+    private List<String> threads;
+    private LocalDate datum;
 
-    // Constructor
-    public Samenvatting(int userStoryID, String userStoryTitel, List<String> berichten, List<String> threads, Date datum) {
+    public Samenvatting(int samenvattingID, int userStoryID, String userStoryTitel,
+                        List<String> berichten, List<String> threads, LocalDate datum) {
+        this.samenvattingID = samenvattingID;
         this.userStoryID = userStoryID;
         this.userStoryTitel = userStoryTitel;
         this.berichten = berichten;
@@ -25,7 +33,10 @@ public class Samenvatting {
         this.datum = datum;
     }
 
-    // Getters en eventueel Setters
+    public int getSamenvattingID() {
+        return samenvattingID;
+    }
+
     public int getUserStoryID() {
         return userStoryID;
     }
@@ -42,7 +53,7 @@ public class Samenvatting {
         return threads;
     }
 
-    public Date getDatum() {
+    public LocalDate getDatum() {
         return datum;
     }
 }

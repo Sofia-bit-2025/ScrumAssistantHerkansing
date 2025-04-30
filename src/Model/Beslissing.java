@@ -1,24 +1,21 @@
+//De klasse Beslissing vertegenwoordigt een belangrijke beslissing
+// die is genomen binnen een User Story.
+//Houdt gegevens vast over een beslissing: bericht-ID, tekst van de beslissing,
+// gekoppelde User Story (ID en titel) en
+// de datum waarop de beslissing is genomen.
+//Maakt het mogelijk om beslissingen gestructureerd op te slaan,
+// te tonen en te gebruiken in rapportages.
 package Model;
-
-import java.util.Date;
-//doel: Belangrijke beslissingen vast te leggen, apart van gewone berichten of threads.
-//Specifieke belangrijke uitkomsten bijhouden
-//Beslissingen koppelen aan de juiste User Story
-//Snel terugvinden van belangrijke afspraken en besluiten
-//1-Opslaan van een beslissing
-//2-Overzicht creëren
-//3-Belangrijke informatie filteren
-//4-Rapportage
+import java.time.LocalDate;
 
 public class Beslissing {
-    private int berichtID;         // ID van het originele bericht
-    private String tekst;           // De tekst van het bericht
-    private int userStoryID;        // Bijbehorende User Story ID
-    private String userStoryTitel;  // Titel van de User Story
-    private Date datum;             // Datum van het bericht
+    private int berichtID;
+    private String tekst;
+    private int userStoryID;
+    private String userStoryTitel;
+    private LocalDate datum;
 
-    // Constructor
-    public Beslissing(int berichtID, String tekst, int userStoryID, String userStoryTitel, Date datum) {
+    public Beslissing(int berichtID, String tekst, int userStoryID, String userStoryTitel, LocalDate datum) {
         this.berichtID = berichtID;
         this.tekst = tekst;
         this.userStoryID = userStoryID;
@@ -26,7 +23,6 @@ public class Beslissing {
         this.datum = datum;
     }
 
-    // Getters
     public int getBerichtID() {
         return berichtID;
     }
@@ -43,10 +39,9 @@ public class Beslissing {
         return userStoryTitel;
     }
 
-    public Date getDatum() {
+    public LocalDate getDatum() {
         return datum;
     }
-
 
     @Override
     public String toString() {

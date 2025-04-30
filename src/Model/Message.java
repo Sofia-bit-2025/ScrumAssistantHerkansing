@@ -1,11 +1,9 @@
+//De klasse Message vertegenwoordigt een individueel bericht binnen een communicatieplatform.
+//Houdt alle eigenschappen van een bericht vast: ID, tekst, afzender, gekoppelde entiteiten
+// (thread, epic, user story, taak), datum en of het een beslissing is.
+//Biedt toegang tot deze eigenschappen en maakt een eenvoudige weergave via toString() mogelijk.
 package Model;
-
-// een bericht voorstellen
-//gegevens van een bericht vasthouden en teruggeven.
-//bewaart alle informatie over een geplaatst bericht in het systeem
-//doel: alle kenmerken van een bericht opslaan
-//toegang geven tot elk kenmerk via getter
-//koppeling tussen bericht en epic taak etc
+import java.time.LocalDate;
 
 public class Message {
     private int berichtID;
@@ -16,9 +14,12 @@ public class Message {
     private int epicID;
     private int userStoryID;
     private int taakID;
+    private LocalDate datum;
+    private boolean isBeslissing;
 
-    //maakt een nieuwe massage object aan
-    public Message(int berichtID, String tekst, String naamAfzender, int gebruikerID, int threadID, int epicID, int userStoryID, int taakID) {
+    public Message(int berichtID, String tekst, String naamAfzender, int gebruikerID,
+                   int threadID, int epicID, int userStoryID, int taakID,
+                   LocalDate datum, boolean isBeslissing) {
         this.berichtID = berichtID;
         this.tekst = tekst;
         this.naamAfzender = naamAfzender;
@@ -27,6 +28,8 @@ public class Message {
         this.epicID = epicID;
         this.userStoryID = userStoryID;
         this.taakID = taakID;
+        this.datum = datum;
+        this.isBeslissing = isBeslissing;
     }
 
     public int getBerichtID() {
@@ -59,5 +62,18 @@ public class Message {
 
     public int getTaakID() {
         return taakID;
+    }
+
+    public LocalDate getDatum() {
+        return datum;
+    }
+
+    public boolean isBeslissing() {
+        return isBeslissing;
+    }
+
+    @Override
+    public String toString() {
+        return "Bericht #" + berichtID + ": " + tekst + " [" + datum + "]";
     }
 }

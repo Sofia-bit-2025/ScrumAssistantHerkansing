@@ -1,14 +1,23 @@
+// beheert het verzenden,
+// opslaan en tonen van berichten binnen het systeem.
+//Verzenden van gewone berichten en berichten binnen een thread.
+//Opslaan van berichten en koppelen aan sprints of andere onderdelen (Epic, User Story, Taak).
+//Ophalen en tonen van berichten, inclusief markering van juiste antwoorden.
+//Automatisch notificaties aanmaken bij belangrijke updates (zoals "afgerond" of "bijgewerkt").
 package Service;
-
 import Model.DatabaseConnector;
 import Model.Gebruiker;
+import Model.Message;
+import Service.NotificatieService;
+import Model.Notificatie;
 import Service.NotificatieService;
 import java.sql.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import Model.Notificatie.TypeUpdate;
 
 public class MessageService {
-
-    // ------------- PRIVATE HULPMETHODES -------------
 
     private void displayMessages(String query, int id) {
         try (Connection connection = DatabaseConnector.connect();
@@ -68,8 +77,6 @@ public class MessageService {
         }
     }
 
-    // ------------- PUBLIEKE METHODES -------------
-
     public void sendMessage(int gebruikerID, int sprintID, String tekst, int epicID, int userStoryID, int taakID) {
         String messageInsert = "INSERT INTO Bericht (Tekst, Datum, AfzenderID, Epic_ID, UserStory_ID, Taak_ID) VALUES (?, ?, ?, ?, ?, ?)";
         String sprintLinkInsert = "INSERT INTO Sprint_Bericht_Verbinding (BerichtID, SprintID) VALUES (?, ?)";
@@ -83,6 +90,7 @@ public class MessageService {
                 if (userStoryID > 0) stmt.setInt(5, userStoryID); else stmt.setNull(5, java.sql.Types.INTEGER);
                 if (taakID > 0) stmt.setInt(6, taakID); else stmt.setNull(6, java.sql.Types.INTEGER);
                 stmt.executeUpdate();
+
                 ResultSet generatedKeys = stmt.getGeneratedKeys();
                 if (generatedKeys.next()) {
                     int berichtID = generatedKeys.getInt(1);
@@ -96,7 +104,9 @@ public class MessageService {
                 System.out.println("Bericht succesvol verzonden.");
                 if (tekst.toLowerCase().contains("afgerond") || tekst.toLowerCase().contains("bijgewerkt")) {
                     NotificatieService notificatieService = new NotificatieService();
-                    String typeUpdate = (epicID != 0) ? "Epic" : (userStoryID != 0) ? "UserStory" : "Taak";
+                    TypeUpdate typeUpdate = (epicID != 0) ? TypeUpdate.EPIC_UPDATE
+                            : (userStoryID != 0) ? TypeUpdate.USERSTORY_UPDATE
+                            : TypeUpdate.TAAK;
                     notificatieService.createNotificatie("Update: " + tekst, typeUpdate, gebruikerID);
                 }
             } catch (SQLException e) {
@@ -124,87 +134,5 @@ public class MessageService {
         }
     }
 
-    public void displayMessagesForSprint(int sprintID) {
-        String query = "SELECT b.Tekst, b.Datum, g.Naam, g.Rol, e.Titel AS EpicTitel, e.Beschrijving AS EpicBeschrijving, " +
-                "us.Titel AS UserStoryTitel, us.Beschrijving AS UserStoryBeschrijving, t.Titel AS TaakTitel, t.Beschrijving AS TaakBeschrijving, b.BerichtID " +
-                "FROM Bericht b " +
-                "JOIN Model.Gebruiker g ON b.AfzenderID = g.GebruikerID " +
-                "LEFT JOIN Epics e ON b.Epic_ID = e.EpicID " +
-                "LEFT JOIN UserStories us ON b.UserStory_ID = us.UserStoryID " +
-                "LEFT JOIN Taken t ON b.Taak_ID = t.TaakID " +
-                "JOIN Sprint_Bericht_Verbinding sbv ON b.BerichtID = sbv.BerichtID " +
-                "WHERE sbv.SprintID = ?";
-        displayMessages(query, sprintID);
-    }
 
-    public void displayMessagesInThread(int threadID) {
-        String juisteAntwoordQuery = "SELECT Juiste_Antwoord FROM Model.Thread WHERE ThreadID = ?";
-        int juisteAntwoordID = -1;
-        try (Connection conn = DatabaseConnector.connect();
-             PreparedStatement stmt = conn.prepareStatement(juisteAntwoordQuery)) {
-            stmt.setInt(1, threadID);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                juisteAntwoordID = rs.getInt("Juiste_Antwoord");
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        String query = "SELECT b.Tekst, b.Datum, g.Naam, g.Rol, e.Titel AS EpicTitel, e.Beschrijving AS EpicBeschrijving, " +
-                "us.Titel AS UserStoryTitel, us.Beschrijving AS UserStoryBeschrijving, t.Titel AS TaakTitel, t.Beschrijving AS TaakBeschrijving, b.BerichtID " +
-                "FROM Bericht b " +
-                "JOIN Model.Gebruiker g ON b.AfzenderID = g.GebruikerID " +
-                "LEFT JOIN Epics e ON b.Epic_ID = e.EpicID " +
-                "LEFT JOIN UserStories us ON b.UserStory_ID = us.UserStoryID " +
-                "LEFT JOIN Taken t ON b.Taak_ID = t.TaakID " +
-                "WHERE b.Thread_ID = ? " +
-                "ORDER BY (b.BerichtID = (SELECT Juiste_Antwoord FROM Model.Thread WHERE ThreadID = ?)) DESC, b.Datum DESC";
-        displayMessages(query, threadID, threadID, juisteAntwoordID);
-    }
-
-    public void displayMessagesForUserStory(int userStoryID) {
-        String query = "SELECT b.Tekst, b.Datum, g.Naam, g.Rol, e.Titel AS EpicTitel, e.Beschrijving AS EpicBeschrijving, " +
-                "us.Titel AS UserStoryTitel, us.Beschrijving AS UserStoryBeschrijving, t.Titel AS TaakTitel, t.Beschrijving AS TaakBeschrijving, b.BerichtID " +
-                "FROM Bericht b " +
-                "JOIN Model.Gebruiker g ON b.AfzenderID = g.GebruikerID " +
-                "LEFT JOIN Epics e ON b.Epic_ID = e.EpicID " +
-                "LEFT JOIN UserStories us ON b.UserStory_ID = us.UserStoryID " +
-                "LEFT JOIN Taken t ON b.Taak_ID = t.TaakID " +
-                "WHERE b.UserStory_ID = ?";
-        displayMessages(query, userStoryID);
-    }
-
-    public void searchMessageContent(String zoek, int sprintID, Gebruiker gebruiker) {
-        boolean isScrumMaster = gebruiker.getRol().equalsIgnoreCase("scrummaster");
-        String joins = "JOIN Sprint_Bericht_Verbinding sbv ON b.BerichtID = sbv.BerichtID " +
-                (isScrumMaster ? "" : "JOIN sprint_teamleden spt ON sbv.SprintID = spt.SprintID ");
-        String where = "WHERE sbv.SprintID = ?" +
-                (isScrumMaster ? "" : " AND spt.GebruikerID = " + gebruiker.getGebruikerID()) +
-                " AND b.Tekst LIKE \"%" + zoek + "%\"";
-        String query = "SELECT b.Tekst, b.Datum, g.Naam, g.Rol, e.Titel, e.Beschrijving, us.Titel, us.Beschrijving, t.Titel, t.Beschrijving, b.BerichtID " +
-                "FROM Bericht b " +
-                "JOIN Model.Gebruiker g ON b.AfzenderID = g.GebruikerID " +
-                "LEFT JOIN Epics e ON b.Epic_ID = e.EpicID " +
-                "LEFT JOIN UserStories us ON b.UserStory_ID = us.UserStoryID " +
-                "LEFT JOIN Taken t ON b.Taak_ID = t.TaakID " +
-                joins + where;
-        displayMessages(query, sprintID);
-    }
-
-    public void searchMessageTitel(Gebruiker gebruiker, String zoek, int sprintID) {
-        boolean isScrumMaster = gebruiker.getRol().equalsIgnoreCase("scrummaster");
-        String joins = "JOIN Sprint_Bericht_Verbinding sbv ON b.BerichtID = sbv.BerichtID " +
-                (isScrumMaster ? "" : "JOIN sprint_teamleden spt ON sbv.SprintID = spt.SprintID ");
-        String where = "WHERE sbv.SprintID = ?" +
-                (isScrumMaster ? "" : " AND spt.GebruikerID = " + gebruiker.getGebruikerID()) +
-                " AND (us.Titel LIKE \"%" + zoek + "%\" OR t.Titel LIKE \"%" + zoek + "%\" OR e.Titel LIKE \"%" + zoek + "%\")";
-        String query = "SELECT b.Tekst, b.Datum, g.Naam, g.Rol, e.Titel, e.Beschrijving, us.Titel, us.Beschrijving, t.Titel, t.Beschrijving, b.BerichtID " +
-                "FROM Bericht b " +
-                "JOIN Model.Gebruiker g ON b.AfzenderID = g.GebruikerID " +
-                "LEFT JOIN Epics e ON b.Epic_ID = e.EpicID " +
-                "LEFT JOIN UserStories us ON b.UserStory_ID = us.UserStoryID " +
-                "LEFT JOIN Taken t ON b.Taak_ID = t.TaakID " +
-                joins + where;
-        displayMessages(query, sprintID);
-    }
 }
